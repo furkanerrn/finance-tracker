@@ -106,103 +106,94 @@ export default function TransactionList({ transactions, onDelete, onEdit }: Tran
                   borderRadius: "14px",
                   padding: "12px 14px",
                   border: "1px solid var(--border-subtle)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
                   cursor: "default",
                 }}
               >
-                {/* Emoji icon */}
-                <div style={{
-                  width: 42, height: 42, borderRadius: "12px",
-                  backgroundColor: `${color}18`,
-                  border: `1.5px solid ${color}40`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0, fontSize: "18px",
-                }}>
-                  {emoji}
-                </div>
+                {/* Üst satır: emoji + açıklama + tutar */}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: "11px",
+                    backgroundColor: `${color}18`,
+                    border: `1.5px solid ${color}40`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0, fontSize: "17px",
+                  }}>
+                    {emoji}
+                  </div>
 
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
+                    flex: 1, minWidth: 0,
                     color: "var(--text-primary)", fontWeight: 600, fontSize: "14px",
                     margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
                     {t.description}
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-                    <span style={{
-                      color, fontSize: "11px", fontWeight: 600,
-                      background: `${color}18`, padding: "2px 8px", borderRadius: "20px",
-                    }}>
-                      {t.category}
-                    </span>
-                    <span style={{ color: "var(--text-muted)", fontSize: "11px" }}>
-                      {formatDate(t.date)}
-                    </span>
-                  </div>
+
+                  <motion.span
+                    key={t.amount}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    style={{
+                      flexShrink: 0,
+                      color: isIncome ? "var(--accent-emerald)" : "var(--accent-rose)",
+                      fontWeight: 700, fontSize: "15px",
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    }}
+                  >
+                    {isIncome ? "+" : "-"}{formatCurrency(t.amount)}
+                  </motion.span>
                 </div>
 
-                {/* Amount */}
-                <motion.div
-                  key={t.amount}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  style={{
-                    display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0,
-                  }}
-                >
+                {/* Alt satır: kategori + tarih + aksiyonlar */}
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  marginTop: "8px", paddingLeft: "50px",
+                }}>
                   <span style={{
-                    color: isIncome ? "var(--accent-emerald)" : "var(--accent-rose)",
-                    fontWeight: 700, fontSize: "15px",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    color, fontSize: "11px", fontWeight: 600,
+                    background: `${color}18`, padding: "2px 8px",
+                    borderRadius: "20px", flexShrink: 0,
                   }}>
-                    {isIncome ? "+" : "-"}{formatCurrency(t.amount)}
+                    {t.category}
                   </span>
-                  <span style={{
-                    fontSize: "10px", fontWeight: 500,
-                    color: isIncome ? "var(--accent-emerald)" : "var(--accent-rose)",
-                    opacity: 0.7,
-                  }}>
-                    {isIncome ? "gelir" : "gider"}
+                  <span style={{ color: "var(--text-muted)", fontSize: "11px", flexShrink: 0 }}>
+                    {formatDate(t.date)}
                   </span>
-                </motion.div>
 
-                {/* Actions */}
-                <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => onEdit(t)}
-                    title="Düzenle"
-                    style={{
-                      width: 30, height: 30, borderRadius: "8px",
-                      border: "1px solid var(--border-subtle)",
-                      background: "transparent",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", color: "var(--text-muted)",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <Pencil size={13} />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => onDelete(t.id)}
-                    title="Sil"
-                    style={{
-                      width: 30, height: 30, borderRadius: "8px",
-                      border: "1px solid rgba(251,113,133,0.2)",
-                      background: "rgba(251,113,133,0.08)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      cursor: "pointer", color: "var(--accent-rose)",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <Trash2 size={13} />
-                  </motion.button>
+                  <div style={{ marginLeft: "auto", display: "flex", gap: "4px" }}>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => onEdit(t)}
+                      title="Düzenle"
+                      style={{
+                        width: 28, height: 28, borderRadius: "8px",
+                        border: "1px solid var(--border-subtle)",
+                        background: "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer", color: "var(--text-muted)",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <Pencil size={12} />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => onDelete(t.id)}
+                      title="Sil"
+                      style={{
+                        width: 28, height: 28, borderRadius: "8px",
+                        border: "1px solid rgba(251,113,133,0.2)",
+                        background: "rgba(251,113,133,0.08)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer", color: "var(--accent-rose)",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      <Trash2 size={12} />
+                    </motion.button>
+                  </div>
                 </div>
               </motion.div>
             );
