@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Inbox } from "lucide-react";
+import { Inbox, Pencil, Trash2 } from "lucide-react";
 import type { Transaction } from "../types";
 import { EXPENSE_CATEGORY_COLORS } from "../data/dummy";
 import { formatCurrency, formatDate } from "../utils/format";
 
 interface TransactionListProps {
   transactions: Transaction[];
+  onDelete: (id: string) => void;
+  onEdit: (transaction: Transaction) => void;
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -27,12 +29,12 @@ const itemVariants = {
   visible: {
     x: 0,
     opacity: 1,
-    transition: { type: "spring", stiffness: 120, damping: 16 },
+    transition: { type: "spring" as const, stiffness: 120, damping: 16 },
   },
   exit: { x: 20, opacity: 0, transition: { duration: 0.2 } },
 };
 
-export default function TransactionList({ transactions }: TransactionListProps) {
+export default function TransactionList({ transactions, onDelete, onEdit }: TransactionListProps) {
   const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
 
   if (sorted.length === 0) {
@@ -166,6 +168,42 @@ export default function TransactionList({ transactions }: TransactionListProps) 
                     {isIncome ? "gelir" : "gider"}
                   </span>
                 </motion.div>
+
+                {/* Actions */}
+                <div style={{ display: "flex", gap: "4px", flexShrink: 0 }}>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => onEdit(t)}
+                    title="Düzenle"
+                    style={{
+                      width: 30, height: 30, borderRadius: "8px",
+                      border: "1px solid var(--border-subtle)",
+                      background: "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer", color: "var(--text-muted)",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <Pencil size={13} />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => onDelete(t.id)}
+                    title="Sil"
+                    style={{
+                      width: 30, height: 30, borderRadius: "8px",
+                      border: "1px solid rgba(251,113,133,0.2)",
+                      background: "rgba(251,113,133,0.08)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer", color: "var(--accent-rose)",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <Trash2 size={13} />
+                  </motion.button>
+                </div>
               </motion.div>
             );
           })}

@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import type { Transaction } from "./types";
 import { dummyTransactions } from "./data/dummy";
 import Header from "./components/Header";
@@ -7,10 +8,30 @@ import TransactionForm from "./components/TransactionForm";
 import CategoryFilter from "./components/CategoryFilter";
 import PieChartPanel from "./components/PieChartPanel";
 import TransactionList from "./components/TransactionList";
+import MonthlyChart from "./components/MonthlyChart";
+import EditModal from "./components/EditModal";
+
+const STORAGE_KEY = "ft-transactions";
+
+function loadTransactions(): Transaction[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as Transaction[];
+  } catch {
+    // ignore parse errors
+  }
+  return dummyTransactions;
+}
 
 function App() {
-  const [transactions, setTransactions] = useState<Transaction[]>(dummyTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>(loadTransactions);
   const [filterCategory, setFilterCategory] = useState<string>("Tümü");
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
+  // Persist to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+  }, [transactions]);
 
   const totalIncome = useMemo(
     () => transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0),
@@ -73,18 +94,32 @@ function App() {
     setTransactions((prev) => [transaction, ...prev]);
   };
 
+  const handleDelete = (id: string) => {
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleEdit = (updated: Transaction) => {
+    setTransactions((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    setEditingTransaction(null);
+  };
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)" }}>
       <Header balance={balance} />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Özet Kartları */}
+        {/* Özet Kartlar */}
         <div className="mb-6">
           <SummaryCards
             totalIncome={totalIncome}
             totalExpense={totalExpense}
             balance={balance}
           />
+        </div>
+
+        {/* Aylık Grafik — tam genişlik */}
+        <div className="mb-6">
+          <MonthlyChart transactions={transactions} />
         </div>
 
         {/* Ana İki Kolon Layout */}
@@ -105,7 +140,11 @@ function App() {
               totalExpense={filteredExpenseTotal}
               totalIncome={filteredIncomeTotal}
             />
-            <TransactionList transactions={filteredTransactions} />
+            <TransactionList
+              transactions={filteredTransactions}
+              onDelete={handleDelete}
+              onEdit={setEditingTransaction}
+            />
           </div>
         </div>
       </main>
@@ -121,6 +160,17 @@ function App() {
       >
         © 2026 FinansTracker — Tüm hakları saklıdır.
       </footer>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingTransaction && (
+          <EditModal
+            transaction={editingTransaction}
+            onSave={handleEdit}
+            onClose={() => setEditingTransaction(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, PiggyBank } from "lucide-react";
 import { formatCurrency } from "../utils/format";
 
 interface SummaryCardsProps {
@@ -16,6 +16,7 @@ interface CardProps {
   gradient: string;
   icon: React.ReactNode;
   index: number;
+  formatValue?: (v: number) => string;
 }
 
 const containerVariants = {
@@ -31,11 +32,11 @@ const cardVariants = {
   visible: {
     y: 0,
     opacity: 1,
-    transition: { type: "spring", stiffness: 100, damping: 15 },
+    transition: { type: "spring" as const, stiffness: 100, damping: 15 },
   },
 };
 
-function SummaryCard({ label, value, color, glowColor, gradient, icon }: CardProps) {
+function SummaryCard({ label, value, color, glowColor, gradient, icon, formatValue }: CardProps) {
   return (
     <motion.div
       variants={cardVariants}
@@ -102,13 +103,27 @@ function SummaryCard({ label, value, color, glowColor, gradient, icon }: CardPro
           letterSpacing: "-0.5px",
         }}
       >
-        {formatCurrency(value)}
+        {formatValue ? formatValue(value) : formatCurrency(value)}
       </motion.div>
     </motion.div>
   );
 }
 
 export default function SummaryCards({ totalIncome, totalExpense, balance }: SummaryCardsProps) {
+  const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
+  const savingsColor =
+    savingsRate >= 30 ? "var(--accent-emerald)" :
+    savingsRate >= 10 ? "var(--accent-amber)" :
+    "var(--accent-rose)";
+  const savingsGlow =
+    savingsRate >= 30 ? "rgba(52,211,153,0.4)" :
+    savingsRate >= 10 ? "rgba(251,191,36,0.4)" :
+    "rgba(251,113,133,0.4)";
+  const savingsGradient =
+    savingsRate >= 30 ? "rgba(52,211,153,0.05)" :
+    savingsRate >= 10 ? "rgba(251,191,36,0.05)" :
+    "rgba(251,113,133,0.05)";
+
   return (
     <motion.div
       className="flex gap-4 flex-col sm:flex-row"
@@ -142,6 +157,16 @@ export default function SummaryCards({ totalIncome, totalExpense, balance }: Sum
         gradient="rgba(167,139,250,0.05)"
         icon={<Wallet size={18} />}
         index={2}
+      />
+      <SummaryCard
+        label="Tasarruf Oranı"
+        value={savingsRate}
+        color={savingsColor}
+        glowColor={savingsGlow}
+        gradient={savingsGradient}
+        icon={<PiggyBank size={18} />}
+        index={3}
+        formatValue={(v) => (totalIncome === 0 ? "—" : `%${v.toFixed(1)}`)}
       />
     </motion.div>
   );
